@@ -12,6 +12,7 @@ import sys
 import os
 import glob
 import argparse
+import torch
 
 # FFmpeg'i PATH'e ekle (Whisper için gerekli)
 FFMPEG_DIR = r"C:\ffmpeg\ffmpeg-8.0.1-essentials_build\bin"
@@ -41,8 +42,16 @@ def transcribe_video(video_path, model_name="small", language=None):
         print(f"❌ Dosya bulunamadı: {video_path}")
         sys.exit(1)
 
+    # GPU/CPU seçimi
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"\n🖥️  Kullanılan cihaz: {device.upper()}")
+    if device == "cuda":
+        print(f"   GPU: {torch.cuda.get_device_name(0)}")
+    else:
+        print("   ⚠️  CUDA bulunamadı, CPU kullanılıyor.")
+
     print(f"\n🔄 Whisper modeli yükleniyor: '{model_name}'...")
-    model = whisper.load_model(model_name)
+    model = whisper.load_model(model_name, device=device)
 
     print(f"🎙️  Transkript ediliyor: {video_path}")
     print("   (Bu işlem birkaç dakika sürebilir...)\n")
